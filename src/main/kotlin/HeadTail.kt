@@ -1,0 +1,1 @@
+fun<T> List<T>.tail() = this.takeLast(this.size - 1)
