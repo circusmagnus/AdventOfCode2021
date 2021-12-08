@@ -5,17 +5,9 @@ fun day8(input: List<String>): Int {
 
     return displays.sumOf { display ->
         val number = display.displayedNumber
-//        println("Display $display is in fact showing number: $number")
         number
     }
 }
-
-//private fun List<String>.justOutputs(): List<List<String>> = map { entry -> entry.justOutput() }
-//
-//private fun String.justOutput(): List<String> {
-//    val output = split("|")[1]
-//    return output.split(" ")
-//}
 
 private fun List<String>.toDisplays() = map { it.toDisplay() }
 
@@ -27,10 +19,6 @@ private fun List<String>.toDisplays() = map { it.toDisplay() }
                 Display(DigitEncodings(entry.first()), EncodedOutcome(entry.last()))
             }
     }
-
-//private enum class SegmentPosition { UPPER, UPPER_LEFT, UPPER_RIGHT, MIDDLE, LOWER_LEFT, LOWER_RIGHT, BOTTOM }
-//
-//private class Segment(val position: SegmentPosition, val encoding: Char)
 
 private data class Digit(val segmentsIds: Set<Char>, val numericValue: Int)
 
@@ -69,26 +57,7 @@ private data class Display(val encodings: DigitEncodings, val outcome: EncodedOu
     }
 }
 
-//private fun decodeUpperSegment(one: Digit, seven: Digit): Segment {
-//    val upper = seven.segmentsIds.subtract(one.segmentsIds)
-//    check(upper.size == 1)
-//    return Segment(SegmentPosition.UPPER, upper.first())
-//}
-
 private fun findSeven(encodings: DigitEncodings) = encodings.values.single { it.size == 3 }.let { Digit(it, 7) }
-
-//private fun decodeUpperRightSegment(six: Digit, seven: Digit): Segment {
-//    val upperRight = seven.segmentsIds.subtract(six.segmentsIds)
-//    check(upperRight.size == 1)
-//    return Segment(SegmentPosition.UPPER_RIGHT, upperRight.first())
-//
-//}
-//
-//private fun decodeLowerRightSegment(upperLeftSegment: Segment, one: Digit): Segment {
-//    val encoding = one.segmentsIds - upperLeftSegment.encoding
-//    check(encoding.size == 1)
-//    return Segment(SegmentPosition.LOWER_RIGHT, encoding.first())
-//}
 
 private fun findOne(encodings: DigitEncodings) = encodings.values
     .single { it.size == 2 }
@@ -132,9 +101,3 @@ private fun findThree(encodings: DigitEncodings, one: Digit) = findTwoThreeOrFiv
 private fun findFive(encodings: DigitEncodings, two: Digit, three: Digit) = findTwoThreeOrFive(encodings)
     .single { it != two.segmentsIds && it != three.segmentsIds }
     .let { Digit(it, 5) }
-
-//private fun decodeBottomSegment(encodings: DigitEncodings): Segment {
-//    val eight = encodings.values.first { it.size == 7 }
-//    check(upper.size == 1)
-//    return upper.first()
-//}
