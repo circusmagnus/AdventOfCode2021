@@ -1,1 +1,1 @@
-fun<T> List<T>.tail() = this.takeLast(this.size - 1)
+fun<T> List<T>.tail() = this.drop(1)
