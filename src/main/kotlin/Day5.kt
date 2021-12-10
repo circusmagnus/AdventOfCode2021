@@ -9,7 +9,7 @@ fun day5(input: List<String>): Int {
 
 }
 
-class Map(val lines: List<Line>) {
+private class Map(val lines: List<Line>) {
 
     val map = drawEmpty()
 
@@ -46,13 +46,13 @@ class Map(val lines: List<Line>) {
 }
 
 
-data class Point(val x: Int, val y: Int) {
+private data class Point(val x: Int, val y: Int) {
     fun drawOn(map: Array<IntArray>) {
         map[y][x] = map[y][x] + 1
     }
 }
 
-class Line(val firstPoint: Point, val lastPoint: Point) {
+private class Line(val firstPoint: Point, val lastPoint: Point) {
 
     val isNotDiagonal
         get() = isVertical || isHorizontal
