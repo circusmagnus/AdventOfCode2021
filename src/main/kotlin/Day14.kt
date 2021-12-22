@@ -1,114 +1,57 @@
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.runBlocking
-import java.math.BigInteger
-
-fun day14(input: List<String>): Long = runBlocking(Dispatchers.Default) {
+fun day14(input: List<String>): Long  {
 
     val rules = findRules(input)
     val template = findTemplate(input)
-    val occurences = mutableMapOf<Char, BigInteger>()
-    template.forEach { char -> occurences[char] = (occurences[char] ?: BigInteger.ZERO).add(BigInteger.ONE) }
-
-    val motherRules = findMotherRules(template, rules, occurences)
-
-    motherRules.first().let { it.countChars() }
+    val initialRuleCount = fillRulesWithTemplate(template, rules)
+    val occurences = findOccurences(template)
 
 
-//    rules.values.forEach { c: Char -> if (occurences[c] == null) occurences[c] = 0 }
 
-//    val nodes = getMotherNodes(template, rules, occurences)
-//
-//    nodes.map { node ->
-//        listOf('B', 'H').forEach { key -> node.countCreated(key).let { occurences[key] = occurences[key]!! + it } }
-//    }
-//        .count()
+    tailrec fun grow(step: Int, currentRuleCount: RuleCount): RuleCount {
+        if(step == 40) return currentRuleCount
+        val newRuleCount = mutableMapOf<Rule, Long>()
 
+        val existingRules = currentRuleCount.filterValues { it != 0L }
 
-//    tailrec fun growStep2(oldTemplate: StringBuilder, currentTemplate: StringBuilder): StringBuilder {
-//        if (oldTemplate.length == 1) {
-//            currentTemplate.append(oldTemplate.last())
-//            return currentTemplate
-//        }
-//        val nextPair = oldTemplate.first() to oldTemplate[1]
-//        val toInsert = rules[nextPair]
-//       val new = toInsert?.let { insert ->
-//            occurences[insert] = (occurences[insert] ?: 0) + 1
-//           currentTemplate.append(nextPair.first).append(insert)
-////            newTemplate + insert
-//        } ?: (currentTemplate.append(nextPair.first))
-//        return growStep2(oldTemplate.deleteCharAt(0), new)
-//    }
-//
-//    tailrec fun growProcess(step: Int, template: StringBuilder): StringBuilder {
-////        println("template after step $step is: ${template}")
-//        return if (step == 40) template
-//        else {
-//            val newTemplate = growStep2(template, StringBuilder(""))
-//            growProcess(step + 1, newTemplate)
-//        }
-////        else {
-////            val iterator = template.listIterator()
-////            iterator.growStep3(rules, occurences)
-////            growProcess(step + 1, template)
-////        }
-//    }
-//
-//    val grown = growProcess(0, StringBuilder(template))
-//
-    val mostCommonOccurences = occurences.maxByOrNull { entry -> entry.value }!!.value
-    val leastCommon = occurences.minByOrNull { entry -> entry.value }!!.value
+        for (rule in existingRules){
+            val (firstChild, secondChild) = rule.key.getChildren(rules)
+            newRuleCount.putOrIncrement(firstChild, rule.value)
+            newRuleCount.putOrIncrement(secondChild, rule.value)
 
-
-    (mostCommonOccurences!! - leastCommon!!).toLong()
-}
-
-fun findMotherRules(template: String, rules: Rules, occurences: MutableMap<Char, BigInteger>): List<MotherRule>{
-     return template.windowed(size = 2, step = 1)
-         .map { MotherRule(rules, occurences, it.first(), it.last()) }
-}
-
-class MotherRule(val rules: Map<Rule, Long>, val occurences: MutableMap<Char, BigInteger>, val motherFirst: Char, val motherSecond: Char) {
-
-
-    fun countChars() {
-        countChars(0, first = motherFirst, second = motherSecond, occurences)
+            occurences.putOrIncrement(rule.key.insert, rule.value)
+        }
+        return grow(step + 1, newRuleCount)
     }
 
-    private fun countChars(step: Int, first: Char, second: Char, rules: MutableMap<Rule, Long>, occurences: MutableMap<Char, BigInteger>) {
-        if (step == 30) return
-        val currentRule = rules
-            .keys
-            .firstOrNull { first == it.require.first && second == it.require.second }
-            ?: return
+    val outcomeRuleCount = grow(0, initialRuleCount)
 
-        val insertedChars = rules[currentRule]!!
-        val firstChildRule = rules
-            .keys
-            .first { it.require.first == first && it.require.second == currentRule.insert }
+    val mostCommonOccurences = occurences.maxByOrNull { it.value }!!.also { println("most common is ${it.key} with value of: ${it.value}") }.value
+    val leastCommon = occurences.minByOrNull { entry -> entry.value }!!.also { println("least common is ${it.key} with value of: ${it.value}") }.value
 
-        rules[firstChildRule] = insertedChars
 
-        occurences[currentRule.insert] = (occurences[currentRule.insert] ?: BigInteger.ZERO) + BigInteger.ONE
-        countChars(step + 1, first = first, second = currentRule.insert, occurences)
-        countChars(step + 1, first = currentRule.insert, second = second, occurences)
-
-    }
+    return (mostCommonOccurences!! - leastCommon!!)
 }
 
-//private fun MutableListIterator<Char>.growStep3(rules: Rules, occurences: MutableMap<Char, Long>) {
-//    while (hasNext()) {
-//        val first = next()
-//        val second = if (hasNext()) next() else return
-////        println("first: $first second: $second")
-//        val maybeInsert = rules[first to second]
-//        maybeInsert?.let { insert ->
-//            occurences[insert] = (occurences[insert] ?: 0) + 1
-//            previous()
-//            add(insert)
-//        }
-//    }
-//}
+private fun findOccurences(template: String): MutableMap<Char, Long> {
+    val map = mutableMapOf<Char, Long>()
+    template.forEach { char ->
+        map.putOrIncrement(char, 1)
+    }
+    return map
+}
+
+private fun fillRulesWithTemplate(template: String, rules: Rules): RuleCount {
+    val ruleCount = mutableMapOf<Rule, Long>()
+    template
+        .windowed(size = 2, step = 1)
+        .onEach { window ->
+            val firstChar = window.first()
+            val secondChar = window.last()
+            val rule = rules.first { it.require.first == firstChar && it.require.second == secondChar }
+            ruleCount[rule] = (ruleCount[rule] ?: 0) + 1
+        }
+    return ruleCount
+}
 
 private fun findTemplate(input: List<String>): String {
     return input.first()
@@ -116,7 +59,16 @@ private fun findTemplate(input: List<String>): String {
 
 typealias Rules = Set<Rule>
 
+typealias RuleCount = MutableMap<Rule, Long>
+
 data class Rule(val require: Pair<Char, Char>, val insert: Char) {
+
+    fun getChildren(rules: Rules): Pair<Rule, Rule> {
+        val firstChildRule = rules.first { it.require.first == this.require.first && it.require.second == insert }
+        val secondChildRule = rules.first { it.require.first == insert && it.require.second == this.require.second }
+
+        return firstChildRule to secondChildRule
+    }
 }
 
 private fun findRules(input: List<String>): Rules {
@@ -128,48 +80,3 @@ private fun findRules(input: List<String>): Rules {
         Rule(require, charToInsert)
     }.toSet()
 }
-//
-//class Node(
-//    val level: Int,
-//    val first: Char,
-//    val second: Char,
-//    val rules: Rules,
-//    val occurences: MutableMap<Char, Long>
-//) {
-//
-//    companion object {
-//        const val MAX_LEVEL = 30
-//    }
-//
-//    val maybeInserted = if (level <= MAX_LEVEL) rules[first to second] else null
-//
-//    val firstChild = maybeInserted?.let { Node(level + 1, first, it, rules, occurences) }
-//    val secondChild = maybeInserted?.let { Node(level + 1, it, second, rules, occurences) }
-//    val children = listOfNotNull(firstChild, secondChild)
-//
-//
-////    init {
-////        maybeInserted?.let { occurences[it] = (occurences[it] ?: 0) + 1 }
-////    }
-//
-//    fun countCreated(polimer: Char): Long {
-//
-//
-//        val self = when {
-//            polimer == maybeInserted -> {
-////                occurences[polimer] = (occurences[polimer] ?: 0) + 1
-//                1
-//            }
-//            else -> 0
-//        }
-//        return self + children.sumOf { it.countCreated(polimer) }
-//    }
-//
-//}
-
-//private fun getMotherNodes(template: String, rules: Rules, occurences: MutableMap<Char, Long>): Flow<Node> {
-//    return template.asSequence()
-//        .windowed(size = 2, step = 1)
-//        .asFlow()
-//        .map { Node(1, it.first(), it.last(), rules, occurences) }
-//}
