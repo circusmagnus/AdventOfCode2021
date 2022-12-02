@@ -3,7 +3,7 @@ fun day9(input: List<String>): Int {
     return map.getLargestBasinsMultiplied()
 }
 
-private data class Point9(val x: Int, val y: Int, val value: Int) {
+data class Point9(val x: Int, val y: Int, val value: Int) {
     var isCounted = false
 }
 
