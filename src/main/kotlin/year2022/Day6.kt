@@ -2,18 +2,18 @@ package year2022
 
 fun day6(data: List<String>): Int {
 
-    return findFirstFour(data.first())
+    return findFirstDistinct(data.first(), 14)
 }
 
-private fun findFirstFour(input: String): Int {
+private fun findFirstDistinct(input: String, distinctCount: Int): Int {
 
 
     tailrec fun go(index: Int): Int {
-        val substring = input.substring(index, index+14)
+        val substring = input.substring(index, index+distinctCount)
         val set = substring.toSet()
 
-       return if(index > input.lastIndex) return -1
-        else if(set.size == 14) return index + 14
+       return if(index > input.lastIndex) -1
+        else if(set.size == distinctCount) index + distinctCount
         else go(index + 1)
     }
 
