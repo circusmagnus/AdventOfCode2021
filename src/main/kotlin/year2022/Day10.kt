@@ -5,34 +5,56 @@ fun day10(data: List<String>): Int {
     val instructions = toInstr(data)
     val proc = Processor()
 
-        return proc.submit(instructions)
+    return proc.submit(instructions)
 }
 
 private class Processor {
 
+    val screen = Array(6) { y ->
+        CharArray(40) { x ->
+            '.'
+        }
+    }
+
+    private fun draw(screen: Array<CharArray>) {
+        for (row in screen) {
+            for (char in row) {
+                print(char)
+            }
+            println()
+        }
+    }
+
     fun submit(instr: List<Instr>): Int {
-        val upTo = 220
-        val after20 = runInstr(instr, State(cycle = 1, x = 1, finished = true), upToCycle = upTo, previousResults = emptyList())
-        println("processor result after $upTo: $after20")
-        return after20.sum()
+        val upTo = 239
+        val after20 = runInstr(instr, State(cycle = 0, x = 1, finished = true), upToCycle = upTo, screen)
+        draw(after20)
+        return 0
     }
 }
 
-private tailrec fun runInstr(instr: List<Instr>, currentState: State, upToCycle: Int, previousResults: List<Int>): List<Int> {
-    val shouldCheck = currentState.cycle == 20 || (currentState.cycle - 20) % 40 == 0
-    val newResult = if(shouldCheck) previousResults + (currentState.x * currentState.cycle) else previousResults
+private tailrec fun runInstr(
+    instr: List<Instr>,
+    currentState: State,
+    upToCycle: Int,
+    screen: Array<CharArray>
+): Array<CharArray> {
+    val drawnRange = (currentState.x - 1)..(currentState.x + 1)
+    val yPosition = currentState.cycle / 40
+    val xPosition = currentState.cycle % 40
 
-    println("iteration with state $currentState and next instr: ${instr.firstOrNull()}")
+    println("drawing: y: $yPosition, x: $xPosition, drawnRange: $drawnRange")
+    if (xPosition in drawnRange) screen[yPosition][xPosition] = '#'
+    else screen[yPosition][xPosition] = '.'
 
-    println("new result after cycle ${currentState.cycle} and current value of x: ${currentState.x} is $newResult")
 
-    return if(instr.isEmpty()) newResult
-    else if(currentState.cycle == upToCycle) newResult
+    return if (instr.isEmpty()) screen
+    else if (currentState.cycle == upToCycle) screen
     else {
         val currentInstr = instr.first()
         val newState = currentInstr.run(currentState)
-        val instrToRunNext = if(newState.finished) instr.drop(1) else instr
-        runInstr(instrToRunNext, newState, upToCycle, newResult)
+        val instrToRunNext = if (newState.finished) instr.drop(1) else instr
+        runInstr(instrToRunNext, newState, upToCycle, screen)
     }
 }
 
