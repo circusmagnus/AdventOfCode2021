@@ -1,14 +1,9 @@
-import kotlinx.coroutines.*
-import kotlinx.coroutines.channels.*
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
-import kotlinx.coroutines.flow.produceIn
-import year2022.day11
+import year2022.day12
 
 @ExperimentalStdlibApi
 fun main() {
 
-    println("answer: ${day11(getData("src/main/resources/year2022/Day11"))}")
+    println("answer: ${day12(getData("src/main/resources/year2022/Day12"))}")
 
 
 }
