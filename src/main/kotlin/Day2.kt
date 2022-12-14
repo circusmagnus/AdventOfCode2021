@@ -9,39 +9,39 @@ fun determinePosition(inputs: List<String>) : Int {
         }
     }
 
-    val lastPosition = commands.fold(Position()){ position, command ->
+    val lastPosition = commands.fold(Position1()){ position, command ->
         command.getNewPosition(position)
     }
 
     return lastPosition.forward * lastPosition.depth
 }
 
-fun String.getAmount(): Int{
+private fun String.getAmount(): Int{
     val splitted = split(" ")
     return splitted[1].toInt()
 }
 
-interface Command {
-    fun getNewPosition(oldPosition: Position): Position
+private interface Command {
+    fun getNewPosition(oldPosition: Position1): Position1
 
     class Forward(val howMuch: Int) : Command{
-        override fun getNewPosition(oldPosition: Position) = oldPosition.copy(
+        override fun getNewPosition(oldPosition: Position1) = oldPosition.copy(
             forward = oldPosition.forward + howMuch,
             depth = oldPosition.depth + howMuch * oldPosition.aim
         )
     }
 
     class Down(val howMuch: Int) : Command{
-        override fun getNewPosition(oldPosition: Position) = oldPosition.copy(
+        override fun getNewPosition(oldPosition: Position1) = oldPosition.copy(
             aim = oldPosition.aim + howMuch
         )
     }
 
     class Up(val howMuch: Int) : Command {
-        override fun getNewPosition(oldPosition: Position) = oldPosition.copy(
+        override fun getNewPosition(oldPosition: Position1) = oldPosition.copy(
             aim = oldPosition.aim - howMuch
         )
     }
 }
 
-data class Position(val forward: Int = 0, val depth: Int = 0, val aim: Int = 0)
+private data class Position1(val forward: Int = 0, val depth: Int = 0, val aim: Int = 0)

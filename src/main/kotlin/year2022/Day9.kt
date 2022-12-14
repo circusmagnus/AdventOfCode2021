@@ -1,7 +1,5 @@
 package year2022
 
-import plus
-
 private const val mapSize = 1000
 private const val startPos = 500
 
@@ -166,7 +164,7 @@ class MiddleKnot(override var posY: Int, override var posX: Int) : FollowingWith
     }
 }
 
-fun makeMap(): Array<BooleanArray> {
+private fun makeMap(): Array<BooleanArray> {
     return Array(mapSize) { yIndex ->
         BooleanArray(mapSize) { xIndex ->
             false

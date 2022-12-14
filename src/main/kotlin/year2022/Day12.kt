@@ -1,5 +1,7 @@
 package year2022
 
+import WithFourNeighbours
+
 fun day12(data: List<String>): Int {
     val toVisit = makeAndInitMap(data)
 
@@ -51,16 +53,16 @@ private fun initPoint(grid: Array<Array<GridPoint>>) {
     }
 }
 
-private class GridPoint(val diff: Int, val elevation: Int, val isEnd: Boolean) {
+private class GridPoint(val diff: Int, val elevation: Int, val isEnd: Boolean): WithFourNeighbours<GridPoint> {
 
     //    var visited: Boolean = false
 //    var isStart: Boolean = false
     var currentDistance = Int.MAX_VALUE
 
-    var left: GridPoint? = null
-    var top: GridPoint? = null
-    var right: GridPoint? = null
-    var bottom: GridPoint? = null
+    override var left: GridPoint? = null
+    override var top: GridPoint? = null
+    override var right: GridPoint? = null
+    override var bottom: GridPoint? = null
 
     val neighbours get() = listOfNotNull(left, top, right, bottom)
 
