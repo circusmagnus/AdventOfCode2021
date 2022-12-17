@@ -40,8 +40,7 @@ fun <T : WithEightNeighbours<T>> Array<Array<T>>.initEightNeighbours() {
 }
 
 interface WithPosition {
-    val x: Int
-    val y: Int
+    val position: Position
 }
 
 data class Position(val x: Int, val y: Int)

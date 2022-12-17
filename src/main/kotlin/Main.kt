@@ -1,9 +1,9 @@
-import year2022.day14
+import year2022.day15
 
 @ExperimentalStdlibApi
 fun main() {
 
-    println("answer: ${day14(getData("src/main/resources/year2022/Day14"))}")
+    println("answer: ${day15(getData("src/main/resources/year2022/Day15"))}")
 
 
 }
