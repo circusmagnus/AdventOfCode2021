@@ -2,6 +2,10 @@ package year2022
 
 import year2022.ActionStatus.*
 
+// 2020 is too low
+// 2185 to high
+// 2515 too high
+// 2058 is bad (?)
 fun day16(data: List<String>): Int {
     val valvesToConnect = data.map { it.makeValve() }
     data.makeConnections(valvesToConnect)
@@ -9,14 +13,41 @@ fun day16(data: List<String>): Int {
     val distances = Distances(makeDistancesMatrix(valvesToConnect), valvesToConnect)
     valvesToConnect.forEach { valve -> valve.distances = distances }
 //    println("after distances")
+    val start = valvesToConnect.first { it.name == "AA" }
 
-    val valvesSorted = valvesToConnect.sortedByDescending { it.flowRate }
+    val (forSanta, forEle) = valvesToConnect.split(start, distances)
 
-    val valveA = valvesSorted.first { it.name == "AA" }
+    val (santaPath, santaResult) = start.getBestValue(null, 27, forSanta, 0)
+    val (elePath, eleResult) = start.getBestValue(null, 27, forEle, 0)
 
-    return makeTurns(valvesSorted, distances)
+    println("santa path: $santaPath")
+    println()
+    println("ele path: $elePath")
+
+
+    return santaResult + eleResult
 
 //    valveA.getBestValue(null, 31, valvesSorted, 0).second
+}
+
+private fun List<Valve>.split(start: Valve, distances: Distances): Pair<List<Valve>, List<Valve>> {
+    val santas = mutableListOf<Valve>()
+    val eles = mutableListOf<Valve>()
+
+    tailrec fun go(toSort: List<Valve>, currentPos: Valve, toSanta: Boolean) {
+        if (toSort.isEmpty()) return
+        val sorted = toSort.sortedByDescending { valve ->
+            val distToNext = with(distances) { currentPos.distanceTo(valve) }
+            valve.flowRate + distToNext
+        }
+        val next = sorted.first()
+        if (toSanta) santas.add(next) else eles.add(next)
+        go(sorted.drop(1), next, !toSanta)
+    }
+
+    go(this, start, true)
+
+    return santas to eles
 }
 
 private fun makeTurns(valves: List<Valve>, distances: Distances): Int {
@@ -126,60 +157,6 @@ private data class Valve(val name: String, val flowRate: Int) {
 
         return buildList<Valve> { add(this@Valve); addAll(bestPath)  } to (thisValue + bestNextValue)
     }
-
-//    fun santaWithElephant(timeLeft: Int, valves: List<Valve>): Int {
-//        val (santaResult, _) = getBestValue(null, timeLeft, valves, 0)
-//        val santaStart = santaResult[santaResult.lastIndex - 1].valve
-//        val (eleResult, _) = getBestValue(null, timeLeft, valves - santaStart, 0)
-//        val eleStart = eleResult[eleResult.lastIndex - 1].valve
-//
-////        println("santa path: $santaResult")
-////        println("ele path: $eleResult")
-////
-////        println("santa start at $santaStart, ele start at $eleStart")
-//
-//        tailrec fun negotiate(
-//            santaStart: Valve,
-//            santasPossibilities: List<Valve>,
-//            elephantStart: Valve,
-//            elephantPossibilities: List<Valve>,
-//            cumulativeResult: Int
-//        ): Int {
-////            println("negotiating with santa start: $santaStart and poss: $santasPossibilities")
-////            println("negotiating with ele start: $elephantStart and poss: $elephantPossibilities")
-//
-//            if (santasPossibilities.intersect(elephantPossibilities.toSet()).isEmpty()) return cumulativeResult
-//
-//            val (santasPath, santasValue) = santaStart.getBestValue(this, timeLeft, santasPossibilities, 0)
-//
-//            val (elephantPath, elephantValue) = elephantStart.getBestValue(this, timeLeft, elephantPossibilities, 0)
-//
-//            val sureSantaValves = santasPath.takeWhile { santaValve ->
-//                val sameElephantValve = elephantPath.firstOrNull { it.valve == santaValve.valve }
-//                sameElephantValve?.let { it.pressureReleased < santaValve.pressureReleased }
-//                    ?: true
-//            }.map { it.valve }
-//
-//            val sureElephantValves = elephantPath.takeWhile { elephantValve ->
-//                val sameSantaValve = santasPath.firstOrNull { it.valve == elephantValve.valve }
-//                sameSantaValve?.let { it.pressureReleased <= elephantValve.pressureReleased }
-//                    ?: true
-//            }.map { it.valve }
-//
-//            println("sure santa valves are: $sureSantaValves")
-//            println()
-//            println("sure ele valves are: $sureElephantValves")
-//
-//
-//            val newSantaPoss = valves - sureElephantValves.toSet()
-//            val newElePoss = valves - sureSantaValves.toSet()
-//
-//            return negotiate(santaStart, newSantaPoss, elephantStart, newElePoss, santasValue + elephantValue)
-//        }
-//
-//        return negotiate(santaStart, valves - eleStart, eleStart, valves - santaStart, 0)
-//
-//    }
 
     override fun toString(): String {
         return "Valve($name, flowRate=$flowRate)"
