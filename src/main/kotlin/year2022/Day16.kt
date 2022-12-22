@@ -30,22 +30,36 @@ fun day16(data: List<String>): Int {
 //    valveA.getBestValue(null, 31, valvesSorted, 0).second
 }
 
+private data class Rim(val valve: Valve, val fromSanta: Int, val fromEle: Int)
+
+private fun Valve.getValueForCenterAt(other: Valve, distances: Distances): Int {
+    val dist = with(distances) { distanceTo(other) }
+    return dist + flowRate
+}
 private fun List<Valve>.split(start: Valve, distances: Distances): Pair<List<Valve>, List<Valve>> {
     val santas = mutableListOf<Valve>()
     val eles = mutableListOf<Valve>()
 
-    tailrec fun go(toSort: List<Valve>, currentPos: Valve, toSanta: Boolean) {
-        if (toSort.isEmpty()) return
-        val sorted = toSort.sortedByDescending { valve ->
-            val distToNext = with(distances) { currentPos.distanceTo(valve) }
+    tailrec fun getStartingValves(toSort: List<Valve>, target: Valve, iteration: Int = 1) {
+        if (iteration > 2) return
+        val newSorted = toSort.sortedByDescending { valve ->
+            val distToNext = with(distances) { target.distanceTo(valve) }
             valve.flowRate + distToNext
         }
-        val next = sorted.first()
-        if (toSanta) santas.add(next) else eles.add(next)
-        go(sorted.drop(1), next, !toSanta)
+        val next = newSorted.first()
+        if (iteration == 1) santas.add(next) else eles.add(next)
+        getStartingValves(newSorted.drop(1), next, iteration + 1)
     }
 
-    go(this, start, true)
+    getStartingValves(this, start)
+
+    val rest = this - (santas + eles).toSet()
+
+    rest.forEach { valve ->
+        val forSanta = valve.getValueForCenterAt(santas.first(), distances)
+        val forEle = valve.getValueForCenterAt(eles.first(), distances)
+        if(forSanta > forEle) santas.add(valve) else eles.add(valve)
+    }
 
     return santas to eles
 }
