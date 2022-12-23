@@ -34,7 +34,7 @@ private data class Rim(val valve: Valve, val fromSanta: Int, val fromEle: Int)
 
 private fun Valve.getValueForCenterAt(other: Valve, distances: Distances): Int {
     val dist = with(distances) { distanceTo(other) }
-    return dist + flowRate
+    return -dist
 }
 private fun List<Valve>.split(start: Valve, distances: Distances): Pair<List<Valve>, List<Valve>> {
     val santas = mutableListOf<Valve>()
@@ -44,7 +44,7 @@ private fun List<Valve>.split(start: Valve, distances: Distances): Pair<List<Val
         if (iteration > 2) return
         val newSorted = toSort.sortedByDescending { valve ->
             val distToNext = with(distances) { target.distanceTo(valve) }
-            valve.flowRate + distToNext
+            valve.flowRate * distToNext
         }
         val next = newSorted.first()
         if (iteration == 1) santas.add(next) else eles.add(next)
