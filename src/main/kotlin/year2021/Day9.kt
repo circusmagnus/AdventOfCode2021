@@ -1,3 +1,5 @@
+package year2021
+
 fun day9(input: List<String>): Int {
     val map = makeMap(input)
     return map.getLargestBasinsMultiplied()

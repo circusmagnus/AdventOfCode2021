@@ -1,3 +1,5 @@
+package year2021
+
 fun day8(input: List<String>): Int {
     println("just input: $input")
 

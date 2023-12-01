@@ -1,3 +1,5 @@
+package year2021
+
 fun day4(input: List<String>): Int {
     println(input)
     val numbers = input.first().split(",").map { it.toInt() }.map { BingoNumber(value = it) }

@@ -1,3 +1,5 @@
+package year2021
+
 fun calculatePowerConsumption(data: List<String>): Int {
     val withInts = data.asSequence().map { row -> row.map { it.digitToInt() }.map { if (it == 1) 1 else -1 } }
     val initialArray = IntArray(data[0].length) { 0 }

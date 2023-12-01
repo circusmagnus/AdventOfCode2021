@@ -1,3 +1,7 @@
+package year2021
+
+import putOrIncrement
+
 fun day14(input: List<String>): Long  {
 
     val rules = findRules(input)

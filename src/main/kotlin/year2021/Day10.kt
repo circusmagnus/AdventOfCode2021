@@ -1,4 +1,5 @@
-import java.util.*
+package year2021
+
 import kotlin.collections.ArrayDeque
 
 fun day10(input: List<String>): Long {

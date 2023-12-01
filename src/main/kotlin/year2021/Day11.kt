@@ -1,3 +1,5 @@
+package year2021
+
 fun day11(input: List<String>): Int {
     val (map, octi) = buildMapAndOcti(input)
 

@@ -1,3 +1,5 @@
+package year2021
+
 fun day12(input: List<String>): Int {
 
     val caves = makeCaveSystem(input)

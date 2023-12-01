@@ -1,3 +1,5 @@
+package year2021
+
 fun determinePosition(inputs: List<String>) : Int {
 
     val commands = inputs.map {
@@ -24,14 +26,14 @@ private fun String.getAmount(): Int{
 private interface Command {
     fun getNewPosition(oldPosition: Position1): Position1
 
-    class Forward(val howMuch: Int) : Command{
+    class Forward(val howMuch: Int) : Command {
         override fun getNewPosition(oldPosition: Position1) = oldPosition.copy(
             forward = oldPosition.forward + howMuch,
             depth = oldPosition.depth + howMuch * oldPosition.aim
         )
     }
 
-    class Down(val howMuch: Int) : Command{
+    class Down(val howMuch: Int) : Command {
         override fun getNewPosition(oldPosition: Position1) = oldPosition.copy(
             aim = oldPosition.aim + howMuch
         )

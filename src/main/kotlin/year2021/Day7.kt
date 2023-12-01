@@ -1,3 +1,5 @@
+package year2021
+
 import kotlin.math.absoluteValue
 
 fun day7(input: List<String>): Int {

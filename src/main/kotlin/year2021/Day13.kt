@@ -1,3 +1,5 @@
+package year2021
+
 fun day13(input: List<String>): Int {
 
     val (paper, dots) = drawPaperAndDots(input)

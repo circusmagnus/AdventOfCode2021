@@ -1,3 +1,5 @@
+package year2021
+
 fun day15(input: List<String>): Int {
 
     val (map, chitons) = makeChitonMap(input)

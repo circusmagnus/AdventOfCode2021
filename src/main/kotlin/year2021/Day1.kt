@@ -1,3 +1,6 @@
+package year2021
+
+import tail
 
 @ExperimentalStdlibApi
 fun countIncreases(data: List<String>) : Int {

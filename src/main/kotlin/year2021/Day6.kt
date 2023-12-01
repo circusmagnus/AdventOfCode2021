@@ -1,3 +1,5 @@
+package year2021
+
 fun day6(input: List<String>): Long {
     val initialFishes = getInitialFishes(input)
 

@@ -1,3 +1,5 @@
+package year2021
+
 fun day5(input: List<String>): Int {
     val lines = input.map { lineData -> Line.fromEntry(lineData) }
     val withoutDiagonals = lines.filter { it.isNotDiagonal }
