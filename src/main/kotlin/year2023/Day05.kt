@@ -1,7 +1,8 @@
 package year2023
 
-import HasId
 import splitBy
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * seeds damy na obiekty w liście
@@ -32,32 +33,33 @@ fun day5(input: List<String>): Long {
 
     val locations = parts.seedpart()
         .first()
-        .toSeedIds()
-        .map { seedRange ->
-            seedRange.value.map { id ->
-                goThroughSwitchGroups(switchGroups, id)
-            }
+        .toSeedRanges()
+        .sortedBy { it.value.first }
+//        .toRange()
+        .map { seedRange: SeedRange ->
+            goThroughSwitchGroups(remaining = switchGroups, listOf(seedRange.value))
         }.flatten()
 
-    return locations.min()
+
+    return locations.minOf { it.first }
 }
 
 data class SeedRange(val value: LongRange)
 
-private tailrec fun goThroughSwitchGroups(remaining: List<SwitchGroup>, incomingId: Long): Long {
+private tailrec fun goThroughSwitchGroups(remaining: List<SwitchGroup>, incomingRanges: List<LongRange>): List<LongRange> {
 //    println("going through swith groups. incomingId: $incomingId")
-
-    if(remaining.isEmpty()) return incomingId
+    val sortedRanges = incomingRanges.sortedBy { it.first }
+    if (remaining.isEmpty()) return sortedRanges
 
     val head = remaining.first()
-    val newId = head.getNewId(incomingId)
+    val newRanges = head.getNewRanges(sortedRanges)
 
 //    println("newId after switch $head is $newId")
 
-    return goThroughSwitchGroups(remaining.drop(1), newId)
+    return goThroughSwitchGroups(remaining.drop(1), newRanges)
 }
 
-private fun String.toSeedIds(): List<SeedRange> {
+private fun String.toSeedRanges(): List<SeedRange> {
     return split("seeds: ")
         .last()
         .split(" ")
@@ -66,19 +68,43 @@ private fun String.toSeedIds(): List<SeedRange> {
         .map { (first, second) -> SeedRange(first until (first + second)) }
 }
 
-data class SwitchGroup(val switches: List<Switch>) {
-    fun getNewId(currentId: Long): Long {
+class SwitchGroup(switches: List<Switch>) {
 
-        tailrec fun run(remaining: List<Switch>, destinationId: Long): Long {
-            if(destinationId != currentId || remaining.isEmpty()) return destinationId
+    private val switches = switches.sortedBy { it.sourceRange.first }
 
-            val head = remaining.first()
-            val newId = head.switch(destinationId)
+    fun getNewRanges(ranges: List<LongRange>): List<LongRange> {
 
-            return run(remaining.drop(1), newId)
+        tailrec fun goThroughSwitches(
+            remaining: List<Switch>,
+            mappedRanges: List<LongRange>,
+            unMappedRanges: List<LongRange>
+        ) : List<LongRange> {
+            if (remaining.isEmpty()) return mappedRanges + unMappedRanges
+
+            val switch = remaining.first()
+            val (newMapped, newUnmapped) = goThroughOneSwitch(switch, mappedRanges, unMappedRanges)
+
+            return goThroughSwitches(remaining.drop(1), newMapped, newUnmapped.sortedBy { it.first })
         }
 
-        return run(remaining = switches, destinationId = currentId)
+        return goThroughSwitches(remaining = switches, mappedRanges = emptyList(), unMappedRanges = ranges)
+    }
+
+    private tailrec fun goThroughOneSwitch(
+        switch: Switch,
+        mappedRanges: List<LongRange>,
+        unMappedRanges: List<LongRange>
+    ): Pair<List<LongRange>, List<LongRange>> {
+        if (unMappedRanges.isEmpty()) return Pair(mappedRanges, unMappedRanges)
+
+        val query = unMappedRanges.first()
+        val (smaller, fitting, greater) = switch.getRanges(query)
+        if (smaller == null && fitting == null) return Pair(mappedRanges, unMappedRanges)
+
+        val newMapped = (mappedRanges + smaller + fitting).filterNotNull()
+        val newUnmapped = (unMappedRanges.drop(1) + greater).filterNotNull().sortedBy { it.first }
+
+        return goThroughOneSwitch(switch, newMapped, newUnmapped)
     }
 }
 
@@ -89,7 +115,7 @@ private fun List<List<String>>.toSwitches(select: List<List<String>>.() -> List<
 private fun List<String>.toSwitchEntries(): List<SwitchEntry> {
     val rawEntries = splitBy { it.contains("map") }
 //    println("rawEntries: $rawEntries")
-        val last = rawEntries.last()
+    val last = rawEntries.last()
 
     return rawEntries.map { entry ->
         entry.map { switchEntry -> switchEntry.toSwitchEntry() }
@@ -107,11 +133,26 @@ private fun String.toSwitchEntry(): SwitchEntry {
 data class SwitchEntry(val sourceStart: Long, val destStart: Long, val rangeSize: Long)
 
 fun SwitchEntry.toSwith() = Switch(
-    sourceRange = sourceStart until(sourceStart + rangeSize),
+    sourceRange = sourceStart until (sourceStart + rangeSize),
     switchBy = destStart - sourceStart
 )
 
 data class Switch(val sourceRange: LongRange, val switchBy: Long) {
+
+    fun getRanges(range: LongRange): Triple<LongRange?, LongRange?, LongRange?> {
+        val smaller = if (range.first < sourceRange.first) range.first .. min(range.last, (sourceRange.first - 1)) else null
+        val greater = if (range.last > sourceRange.last) max(range.first, (sourceRange.last + 1))..range.last else null
+        val fitting = if (range.first <= sourceRange.last && range.last >= sourceRange.first) {
+            max(range.first, sourceRange.first)..min(range.last, sourceRange.last)
+        } else {
+            null
+        }
+        return Triple(smaller, fitting?.let { switch(it) }, greater)
+    }
+
+    private fun switch(range: LongRange) = range.first + switchBy..range.last + switchBy
+
+//    private fun split(range)
 
     fun switch(id: Long): Long {
         val doesMatch = id in sourceRange
