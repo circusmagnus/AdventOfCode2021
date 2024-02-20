@@ -8,6 +8,6 @@ import kotlin.time.measureTimedValue
 fun main() {
     //    println("answer: ${day5(getData("src/main/resources/year2023/day05"))}")
 
-    val measured = measureTimedValue { day8(getData("src/main/resources/year2023/day08")) }
+    val measured = measureTimedValue { day9(getData("src/main/resources/year2023/day09")) }
     println("task done in ${measured.duration} with value: ${measured.value}")
 }
